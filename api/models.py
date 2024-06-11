@@ -2,21 +2,52 @@ from django.db import models
 from django.contrib.auth.models import User
 
 # Create your models here.
+
+class Room(models.Model):
+    number = models.IntegerField()
+
+    def __str__(self):
+        return self.number
+
+class Teacher(models.Model):
+    user = models.ForeignKey(User, on_delete = models.CASCADE)
+    bio = models.TextField()
+    phone = models.CharField(max_length = 20, unique=True)
+    photo = models.ImageField(upload_to="teachers/")   
+
+    def __str__(self):
+        return self.user.username
+
+
 class Course(models.Model):
     name = models.CharField(max_length = 255)
 
     def __str__(self):
         return self.name
 
+
+class Group(models.Model):
+    name = models.CharField(max_length = 255)
+    supervisor = models.ForeignKey(Teacher, on_delete = models.PROTECT)
+    room = models.ForeignKey(Room, on_delete = models.PROTECT)
+
+    def __str__(self):
+        return self.name
+
+
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete = models.CASCADE)
     sign_course_data = models.DateField(auto_now_add = True)
-    course = models.ForeignKey(Course, on_delete = models.PROTECT)
+    group = models.ForeignKey(Group, on_delete = models.PROTECT)
     end_course_data = models.DateField()
     balance = models.IntegerField(default = 0)
     
     def __str__(self):
         return self.user.username
+
+    class Meta:
+        unique_together = ('user', 'group')
+
 
 class PaymentHistory(models.Model):
     student = models.ForeignKey(Student, on_delete = models.CASCADE)
