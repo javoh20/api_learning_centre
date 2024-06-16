@@ -5,6 +5,7 @@ urlpatterns = [
     path('users/', UsersAPIView.as_view()),
     
     path('students/', StudentsAPIView.as_view()),
+    path('students/<int:pk>/', StudentRUDAPIView.as_view()),
 
     path('groups/', GroupsAPIView.as_view()),
     path('groups/<int:pk>/', GroupRUDAPIView.as_view()),

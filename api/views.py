@@ -29,7 +29,7 @@ class UsersAPIView(APIView):
         users = User.objects.all()
         serializer = UserSerializer(users, many = True)
         return Response(serializer.data, status = status.HTTP_200_OK)
-    
+
 class StudentsAPIView(APIView):
     def post(self, request):
         try:
@@ -55,7 +55,7 @@ class StudentsAPIView(APIView):
 
     def get(self, request):
         students = Student.objects.all()
-        serializer = StudentRegSerializer(students, many = True)
+        serializer = StudentShortSerializer(students, many = True)
         return Response(serializer.data, status = status.HTTP_200_OK)
 
 class GroupsAPIView(APIView):
@@ -122,3 +122,7 @@ class RoomsAPIView(ListCreateAPIView):
 class RoomRUDAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
+
+class StudentRUDAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentDetailSerializer

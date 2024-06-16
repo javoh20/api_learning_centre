@@ -18,6 +18,18 @@ class TeacherShortSerializer(serializers.ModelSerializer):
         model = Teacher
         fields = ('id', 'user', 'photo')
 
+class GroupNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ('name', )
+
+class StudentShortSerializer(serializers.ModelSerializer):
+    user = UserShortSerializer()
+    group = GroupNameSerializer()
+
+    class Meta:
+        model = Student
+        fields = ('id', 'user', 'group', )
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -52,11 +64,17 @@ class TeacherSerializer(serializers.ModelSerializer):
         model = Teacher
         fields = "__all__"
 
-
 class GroupSerializer(serializers.ModelSerializer):
     room = RoomShortSerializer()
     supervisor = TeacherShortSerializer()
-    
+
     class Meta:
         model = Group
         fields = ('id', 'name', 'room', 'supervisor', )
+
+class StudentDetailSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    group = GroupNameSerializer()
+    class Meta:
+        model = Student
+        fields = "__all__"
