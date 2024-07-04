@@ -2,8 +2,6 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('users/', UsersAPIView.as_view()),
-    
     path('students/', StudentsAPIView.as_view()),
     path('students/<int:pk>/', StudentRUDAPIView.as_view()),
 
@@ -15,4 +13,16 @@ urlpatterns = [
 
     path('teachers/', TeachersAPIView.as_view()),
     path('teachers/<int:pk>/', TeacherRUDAPIView.as_view()),
+
+    path('subjects/', SubjectsAPIView.as_view()),
+    path('subjects/<int:pk>/', SubjectRUDAPIView.as_view()),
+
+    path('times/', TimesAPIView.as_view()),
+    path('times/<int:pk>/', TimeRUDAPIView.as_view()),
+
+    path('timelists/', TimeListsAPIView.as_view()),
+    path('timelists/<int:pk>/', TimeListRUDAPIView.as_view()),
+
+    path('lessons/', LessonsAPIView.as_view()),
+    path('lessons/<int:pk>/', LessonRUDAPIView.as_view()),
 ]

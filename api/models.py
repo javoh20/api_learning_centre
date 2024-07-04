@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MaxValueValidator
 
 # Create your models here.
 
@@ -16,7 +17,8 @@ class Room(models.Model):
         return self.number
 
 class Teacher(models.Model):
-    user = models.ForeignKey(User, on_delete = models.CASCADE)
+    name = models.CharField(max_length = 255)
+    email = models.EmailField(unique = True)
     bio = models.TextField()
     phone = models.CharField(max_length = 20, unique=True)
     photo = models.ImageField(upload_to="teachers/")   
@@ -24,13 +26,6 @@ class Teacher(models.Model):
     sign_data = models.DateField(auto_now_add = True)
     balance = models.IntegerField(default = 0)
     end_contract_date = models.DateField()
-
-    def __str__(self):
-        return self.user.username
-
-
-class Course(models.Model):
-    name = models.CharField(max_length = 255)
 
     def __str__(self):
         return self.name
@@ -45,8 +40,53 @@ class Group(models.Model):
         return self.name
 
 
+class Time(models.Model):
+    lesson_order = models.IntegerField(unique=True)
+    start_time = models.TimeField(unique=True)
+    end_time = models.TimeField(unique=True)
+
+    def __str__(self):
+        return f"{self.start_time} - {self.end_time}"
+
+
+class Timelist(models.Model):
+    week_days = [
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+    ]
+
+    group = models.ForeignKey(Group,on_delete = models.CASCADE,)
+    day = models.CharField(max_length = 15, choices = week_days, null = False)
+    
+    def __str__(self):
+        return f"{self.group}, {self.day}"
+    
+    class Meta:
+        unique_together = ('group', 'day')
+
+
+class Lesson(models.Model):
+    timelist = models.ForeignKey(Timelist, on_delete = models.CASCADE)
+    subject = models.ForeignKey(Subject, on_delete = models.SET_NULL, null = True)
+    teacher = models.ForeignKey(Teacher, on_delete = models.SET_NULL, null = True)
+    room = models.ForeignKey(Room, on_delete = models.SET_NULL, null = True)
+    time = models.ForeignKey(Time, on_delete = models.SET_NULL, null = True)
+
+    def __str__(self):
+        return f"{self.timelist}, {str(self.subject)}, \n {str(self.time)}"
+    
+    class Meta:
+        unique_together = ('timelist', 'subject', 'teacher', 'room', 'time')
+
+
 class Student(models.Model):
-    user = models.OneToOneField(User, on_delete = models.CASCADE)
+    name = models.CharField(max_length = 255)
+    email = models.EmailField(unique = True)
+    phone = models.CharField(max_length = 20, unique=True)
     sign_course_data = models.DateField(auto_now_add = True)
     group = models.ForeignKey(Group, on_delete = models.PROTECT)
     end_course_data = models.DateField()
@@ -54,11 +94,7 @@ class Student(models.Model):
     graduated = models.BooleanField(default = False)
 
     def __str__(self):
-        return self.user.username
-
-    class Meta:
-        unique_together = ('user', 'group')
-
+        return self.name
 
 class PaymentHistory(models.Model):
     student = models.ForeignKey(Student, on_delete = models.CASCADE)
@@ -66,7 +102,7 @@ class PaymentHistory(models.Model):
     payment_amount = models.IntegerField()
 
     def __str__(self):
-        return self.student.user.username
+        return self.student.name
     
 class SalaryHistory(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete = models.CASCADE)
@@ -74,4 +110,4 @@ class SalaryHistory(models.Model):
     payment_amount = models.IntegerField()
 
     def __str__(self):
-        return self.teacher.user.username
+        return self.teacher.name

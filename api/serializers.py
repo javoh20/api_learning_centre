@@ -2,10 +2,6 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import *
 
-class RoomShortSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Room
-        fields = ('number',)
 
 class UserShortSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,23 +9,22 @@ class UserShortSerializer(serializers.ModelSerializer):
         fields = ('last_name', 'first_name')
 
 class TeacherShortSerializer(serializers.ModelSerializer):
-    user = UserShortSerializer()
     class Meta:
         model = Teacher
-        fields = ('id', 'user', 'photo')
+        fields = ('id', 'name', 'photo')
 
 class GroupNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ('name', )
 
+
 class StudentShortSerializer(serializers.ModelSerializer):
-    user = UserShortSerializer()
     group = GroupNameSerializer()
 
     class Meta:
         model = Student
-        fields = ('id', 'user', 'group', )
+        fields = ('id', 'name', 'group', )
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -48,7 +43,6 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     
 class StudentRegSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
     class Meta:
         model = Student
         fields = "__all__"
@@ -59,13 +53,12 @@ class RoomSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class TeacherSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
     class Meta:
         model = Teacher
         fields = "__all__"
 
 class GroupSerializer(serializers.ModelSerializer):
-    room = RoomShortSerializer()
+    room = RoomSerializer()
     supervisor = TeacherShortSerializer()
 
     class Meta:
@@ -78,3 +71,35 @@ class StudentDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = "__all__"
+
+class SubjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = "__all__"
+
+class TimeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Time
+        fields = "__all__"
+
+class TimelistSerializer(serializers.ModelSerializer):
+    group = GroupNameSerializer()
+    class Meta:
+        model = Timelist
+        fields = ('id', 'day', 'group', )
+
+class LessonShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = "__all__"
+    
+
+class LessonSerializer(serializers.ModelSerializer):
+    timelist = TimelistSerializer()
+    subject = SubjectSerializer()
+    teacher = TeacherShortSerializer()
+    room = RoomSerializer()
+    time = TimeSerializer()
+    class Meta:
+        model = Lesson
+        fields = ('id', 'timelist', 'subject', 'teacher', 'room', 'time', )
