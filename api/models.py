@@ -14,7 +14,7 @@ class Room(models.Model):
     number = models.IntegerField()
 
     def __str__(self):
-        return self.number
+        return str(self.number)
 
 class Teacher(models.Model):
     name = models.CharField(max_length = 255)
@@ -77,7 +77,7 @@ class Lesson(models.Model):
     time = models.ForeignKey(Time, on_delete = models.SET_NULL, null = True)
 
     def __str__(self):
-        return f"{self.timelist}, {str(self.subject)}, \n {str(self.time)}"
+        return str(f"{self.timelist}, {str(self.subject)}, \n {str(self.time)}")
     
     class Meta:
         unique_together = ('timelist', 'subject', 'teacher', 'room', 'time')

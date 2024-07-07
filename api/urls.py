@@ -2,6 +2,12 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
+    path('group_timelist/<int:pk>/', GroupTimelistAPIView.as_view()),
+
+    path('statistics/', StatisticsAPIView.as_view()),
+
+    path('students/debt/', DebtStudentsAPIView.as_view()),
+
     path('students/', StudentsAPIView.as_view()),
     path('students/<int:pk>/', StudentRUDAPIView.as_view()),
 
@@ -25,4 +31,5 @@ urlpatterns = [
 
     path('lessons/', LessonsAPIView.as_view()),
     path('lessons/<int:pk>/', LessonRUDAPIView.as_view()),
+
 ]

@@ -9,3 +9,8 @@ admin.site.register(Teacher)
 admin.site.register(Room)
 admin.site.register(Subject)
 admin.site.register(SalaryHistory)
+admin.site.register(Lesson)
+admin.site.register(Timelist)
+admin.site.register(Time)
+
+

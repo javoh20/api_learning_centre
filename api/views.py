@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView
  
+from collections import OrderedDict
+
 from django.shortcuts import get_object_or_404
 
 from .serializers import *
@@ -197,3 +199,79 @@ class LessonsAPIView(APIView):
 class LessonRUDAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+
+
+
+class GroupTimelistAPIView(APIView):
+    def get(self, request, pk):
+        group = get_object_or_404(Group, pk=pk)
+        group_name = group.name
+
+        lessons = Lesson.objects.filter(timelist__group=group).order_by('time')
+
+        days = {
+            'monday': [],
+            'tuesday': [],
+            'wednesday': [],
+            'thursday': [],
+            'friday': [],
+            'saturday': []
+        }
+
+        for i in lessons:
+            day = {
+                "subject": SubjectSerializer(i.subject).data,
+                "teacher": TeacherShortSerializer(i.teacher).data,
+                "room": RoomSerializer(i.room).data,
+                "time": TimeSerializer(i.time).data, 
+            }
+            days[i.timelist.day.lower()].append(day)
+
+        return Response(
+            {
+                "group": group_name,
+                "days": days,
+            }
+        )
+    
+class StatisticsAPIView(APIView):
+    def get(self, request):
+        subject_quantity = Subject.objects.count()
+        teachers_quantity = Teacher.objects.count()
+        groups_quantity = Group.objects.count()
+        students_quantity = Student.objects.filter(graduated = False).count()
+        students_graduated_quantity = Student.objects.filter(graduated = True).count()
+
+        result = {
+            "Subjects" : subject_quantity,
+            "Teachers" : teachers_quantity,
+            "Groups" : groups_quantity,
+            "Students" : students_quantity,
+            "Graduated students" : students_graduated_quantity,
+        }
+
+        return Response(result, status = status.HTTP_200_OK)
+
+class DebtStudentsAPIView(APIView):
+    def get(self, request):
+        debt_students = []
+
+        for s in Student.objects.all():
+            if s.balance < 0:
+                group = s.group
+                courses = []
+                for l in Lesson.objects.filter(timelist__group=group):
+                    if l.subject:
+                        courses.append(l.subject.name)
+
+                courses = list(OrderedDict.fromkeys(courses))
+
+                debt_stud = {
+                    "Name": s.name,
+                    "Courses": courses,
+                    "Debt": str(s.balance)
+                }
+
+                debt_students.append(debt_stud)
+        
+        return Response(debt_students, status=status.HTTP_200_OK)
