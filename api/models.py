@@ -6,6 +6,7 @@ from django.core.validators import MaxValueValidator
 
 class Subject(models.Model):
     name = models.CharField(max_length = 255)
+    price_per_month = models.IntegerField()
 
     def __str__(self):
         return self.name

@@ -103,3 +103,9 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = ('id', 'timelist', 'subject', 'teacher', 'room', 'time', )
+
+class PaymentHistorySerializer(serializers.ModelSerializer):
+    student = StudentShortSerializer()
+    class Meta:
+        model = PaymentHistory
+        fields = '__all__'

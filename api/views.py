@@ -275,3 +275,62 @@ class DebtStudentsAPIView(APIView):
                 debt_students.append(debt_stud)
         
         return Response(debt_students, status=status.HTTP_200_OK)
+    
+class PaymentAPIView(APIView):
+    def get(self, request, pk):
+        group = get_object_or_404(Group, pk = pk)
+
+        students = []
+
+        for s in Student.objects.filter(group = group):
+            group = s.group
+            courses = []
+            for l in Lesson.objects.filter(timelist__group=group):
+                if l.subject:
+                    courses.append(l.subject.name)
+
+            courses = list(OrderedDict.fromkeys(courses))
+            price = 0
+
+            for c in courses:
+                price += get_object_or_404(Subject, name = c).price_per_month
+
+            balance = s.balance - price
+
+            s.balance = balance
+            s.save()
+
+            students.append({
+                "Name":s.name,
+                "Balance":s.balance,
+                "Courses":courses,
+                "Payment per month":price,
+            })
+
+        return Response(students, status=status.HTTP_200_OK)
+    
+
+class RefillAPIView(APIView):
+    def post(self, request):
+        student = get_object_or_404(Student, pk =  request.data.get('student_id'))
+        sum = request.data.get('sum')
+
+        student.balance += sum
+        student.save()
+
+        payment = PaymentHistory.objects.create(student = student, payment_amount = sum)
+        payment.save()
+
+        return Response({
+            "Student":student.name,
+            "Balance":student.balance,
+        }, status = status.HTTP_200_OK)
+    
+
+class PaymentHistoryAPIView(APIView):
+    def get(self, request, pk):
+        student = get_object_or_404(Student, pk=pk)
+        payments = PaymentHistory.objects.filter(student=student)
+        serializer = PaymentHistorySerializer(payments, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
