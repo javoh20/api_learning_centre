@@ -10,17 +10,17 @@ from django.shortcuts import get_object_or_404
 from .serializers import *
 from .models import *
 
-def is_admin(request):
-    if not request.user.is_authenticated:
-        return Response(status = status.HTTP_403_FORBIDDEN)
+from rest_framework.permissions import BasePermission
 
-    if not request.user.is_superuser:
-        return Response(status = status.HTTP_403_FORBIDDEN)
-    
-    return True
+
+class IsAdminUser(BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated and request.user.is_superuser)
 
 
 class StudentsAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def get(self, request):
         students = Student.objects.all()
         serializer = StudentShortSerializer(students, many = True)
@@ -53,11 +53,14 @@ class StudentsAPIView(APIView):
 
 
 class StudentRUDAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Student.objects.all()
     serializer_class = StudentDetailSerializer
 
 
 class GroupsAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def get(self, request):
         groups = Group.objects.all()
         serializer = GroupSerializer(groups, many = True)
@@ -83,11 +86,14 @@ class GroupsAPIView(APIView):
         return Response(serializer.data, status = status.HTTP_201_CREATED)
 
 class GroupRUDAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
 
 class TeachersAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def get(self, request):
         teachers = Teacher.objects.all()
         serializer = TeacherShortSerializer(teachers, many = True)
@@ -114,38 +120,47 @@ class TeachersAPIView(APIView):
         return Response(serializer.data, status = status.HTTP_201_CREATED)
 
 class TeacherRUDAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Teacher.objects.all()
     serializer_class = TeacherSerializer
 
 
 class RoomsAPIView(ListCreateAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
 
 class RoomRUDAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
 
 
 class SubjectsAPIView(ListCreateAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer 
 
 class SubjectRUDAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer 
 
 
 class TimesAPIView(ListCreateAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Time.objects.all()
     serializer_class = TimeSerializer 
 
 class TimeRUDAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Time.objects.all()
     serializer_class = TimeSerializer
 
 
 class TimeListsAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def get(self, request):
         timelists = Timelist.objects.all()
         serializer = TimelistSerializer(timelists, many = True)
@@ -166,11 +181,14 @@ class TimeListsAPIView(APIView):
         return Response(serializer.data, status = status.HTTP_201_CREATED)
 
 class TimeListRUDAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Timelist.objects.all()
     serializer_class = TimelistSerializer
 
 
 class LessonsAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def get(self, request):
         lessons = Lesson.objects.all()
         serializer = LessonSerializer(lessons, many = True)
@@ -197,12 +215,15 @@ class LessonsAPIView(APIView):
         return Response(serializer.data, status = status.HTTP_201_CREATED)
 
 class LessonRUDAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
 
 
 
 class GroupTimelistAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def get(self, request, pk):
         group = get_object_or_404(Group, pk=pk)
         group_name = group.name
@@ -235,6 +256,8 @@ class GroupTimelistAPIView(APIView):
         )
     
 class StatisticsAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def get(self, request):
         subject_quantity = Subject.objects.count()
         teachers_quantity = Teacher.objects.count()
@@ -253,6 +276,8 @@ class StatisticsAPIView(APIView):
         return Response(result, status = status.HTTP_200_OK)
 
 class DebtStudentsAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def get(self, request):
         debt_students = []
 
@@ -277,6 +302,8 @@ class DebtStudentsAPIView(APIView):
         return Response(debt_students, status=status.HTTP_200_OK)
     
 class PaymentAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def get(self, request, pk):
         group = get_object_or_404(Group, pk = pk)
 
@@ -311,6 +338,8 @@ class PaymentAPIView(APIView):
     
 
 class RefillAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def post(self, request):
         student = get_object_or_404(Student, pk =  request.data.get('student_id'))
         sum = request.data.get('sum')
@@ -328,6 +357,8 @@ class RefillAPIView(APIView):
     
 
 class PaymentHistoryAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def get(self, request, pk):
         student = get_object_or_404(Student, pk = pk)
         payments = PaymentHistory.objects.filter(student = student)
@@ -336,6 +367,8 @@ class PaymentHistoryAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class SalaryAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def post(self, request):
         teacher = get_object_or_404(Teacher, pk =  request.data.get('teacher_id'))
         sum = request.data.get('sum')
@@ -349,6 +382,8 @@ class SalaryAPIView(APIView):
         }, status = status.HTTP_200_OK)
 
 class SalaryHistoryAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def get(self, request, pk):
         teacher = get_object_or_404(Teacher, pk = pk)
         salaries = SalaryHistory.objects.filter(teacher = teacher)
@@ -357,6 +392,8 @@ class SalaryHistoryAPIView(APIView):
         return Response(serializer.data, status = status.HTTP_200_OK)
     
 class DeleteStudentAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def post(self, request):
         student = get_object_or_404(Student, pk = request.data.get('student_id'))
         cause = request.data.get('cause')
@@ -373,6 +410,8 @@ class DeleteStudentAPIView(APIView):
         }, status = status.HTTP_200_OK)
     
 class StatisticsStudentsDeletedAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
     def get(self, request):
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
@@ -402,6 +441,7 @@ class StatisticsStudentsDeletedAPIView(APIView):
 
 
 class StatisticsNewStudentsAPIView(APIView):
+    permission_classes = [IsAdminUser]
 
     def get(self, request):
         start_date = request.query_params.get('start_date')
