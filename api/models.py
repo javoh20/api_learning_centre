@@ -97,6 +97,13 @@ class Student(models.Model):
     def __str__(self):
         return self.name
 
+
+class DeletedStudents(models.Model):
+    name = models.CharField(max_length = 255)
+    cause = models.CharField(max_length = 255)
+    date = models.DateField(auto_now_add = True)
+
+
 class PaymentHistory(models.Model):
     student = models.ForeignKey(Student, on_delete = models.CASCADE)
     date_time = models.DateTimeField(auto_now_add = True)

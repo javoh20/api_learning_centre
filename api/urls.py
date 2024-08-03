@@ -2,20 +2,24 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('payment_history/<int:pk>/', PaymentHistoryAPIView.as_view()),
+    path('salary/history/<int:pk>/', SalaryHistoryAPIView.as_view()),
+    path('salary/', SalaryAPIView.as_view()),
 
     path('refill/', RefillAPIView.as_view()),
 
+    path('payment/history/<int:pk>/', PaymentHistoryAPIView.as_view()),
     path('payment/<int:pk>/', PaymentAPIView.as_view()),
 
     path('group_timelist/<int:pk>/', GroupTimelistAPIView.as_view()),
 
     path('statistics/', StatisticsAPIView.as_view()),
-
-    path('students/debt/', DebtStudentsAPIView.as_view()),
+    path('statistics/students/deleted/', StatisticsStudentsDeletedAPIView.as_view()),
+    path('statistics/students/new/', StatisticsNewStudentsAPIView.as_view()),
 
     path('students/', StudentsAPIView.as_view()),
     path('students/<int:pk>/', StudentRUDAPIView.as_view()),
+    path('students/debt/', DebtStudentsAPIView.as_view()),
+    path('students/delete/', DeleteStudentAPIView.as_view()),
 
     path('groups/', GroupsAPIView.as_view()),
     path('groups/<int:pk>/', GroupRUDAPIView.as_view()),
@@ -37,5 +41,4 @@ urlpatterns = [
 
     path('lessons/', LessonsAPIView.as_view()),
     path('lessons/<int:pk>/', LessonRUDAPIView.as_view()),
-
 ]

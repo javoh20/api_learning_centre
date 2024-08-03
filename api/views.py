@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView
- 
+from datetime import datetime
 from collections import OrderedDict
 
 from django.shortcuts import get_object_or_404
@@ -329,8 +329,108 @@ class RefillAPIView(APIView):
 
 class PaymentHistoryAPIView(APIView):
     def get(self, request, pk):
-        student = get_object_or_404(Student, pk=pk)
-        payments = PaymentHistory.objects.filter(student=student)
-        serializer = PaymentHistorySerializer(payments, many=True)
+        student = get_object_or_404(Student, pk = pk)
+        payments = PaymentHistory.objects.filter(student = student)
+        serializer = PaymentHistorySerializer(payments, many = True)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class SalaryAPIView(APIView):
+    def post(self, request):
+        teacher = get_object_or_404(Teacher, pk =  request.data.get('teacher_id'))
+        sum = request.data.get('sum')
+
+        salary = SalaryHistory.objects.create(teacher = teacher, payment_amount = sum)
+        salary.save()
+
+        return Response({
+            "Teacher":teacher.name,
+            "Salary":sum,
+        }, status = status.HTTP_200_OK)
+
+class SalaryHistoryAPIView(APIView):
+    def get(self, request, pk):
+        teacher = get_object_or_404(Teacher, pk = pk)
+        salaries = SalaryHistory.objects.filter(teacher = teacher)
+        serializer = SalaryHistorySerializer(salaries, many = True)
+
+        return Response(serializer.data, status = status.HTTP_200_OK)
+    
+class DeleteStudentAPIView(APIView):
+    def post(self, request):
+        student = get_object_or_404(Student, pk = request.data.get('student_id'))
+        cause = request.data.get('cause')
+        
+        name = student.name
+
+        record = DeletedStudents.objects.create(name = student.name, cause = cause)
+        record.save()
+
+        student.delete()
+        return Response({
+            "Student name":name,
+            "Cause":cause
+        }, status = status.HTTP_200_OK)
+    
+class StatisticsStudentsDeletedAPIView(APIView):
+    def get(self, request):
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
+        if start_date and end_date:
+            try:
+                start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+                end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({'error': 'Invalid date format. Use YYYY-MM-DD'}, status=status.HTTP_400_BAD_REQUEST)
+            deleted_students = DeletedStudents.objects.filter(date__range=[start_date, end_date])
+        else:
+            deleted_students = DeletedStudents.objects.all()
+
+        stats = {
+            'total_deleted': deleted_students.count(),
+            'details': [
+                {
+                    'name': student.name,
+                    'cause': student.cause,
+                    'date': student.date
+                } for student in deleted_students
+            ]
+        }
+
+        return Response(stats, status=status.HTTP_200_OK)
+
+
+class StatisticsNewStudentsAPIView(APIView):
+
+    def get(self, request):
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
+        if start_date and end_date:
+            try:
+                start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+                end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({'error': 'Invalid date format. Use YYYY-MM-DD'}, status=status.HTTP_400_BAD_REQUEST)
+            new_students = Student.objects.filter(sign_course_data__range=[start_date, end_date])
+        else:
+            new_students = Student.objects.all()
+
+        stats = {
+            'total_new': new_students.count(),
+            'details': [
+                {
+                    'name': student.name,
+                    'email': student.email,
+                    'phone': student.phone,
+                    'sign_course_data': student.sign_course_data,
+                    'group': student.group.name,
+                    'subjects': list(set(
+                        lesson.subject.name for lesson in Lesson.objects.filter(timelist__group=student.group)
+                    ))
+                } for student in new_students
+            ]
+        }
+
+        return Response(stats, status=status.HTTP_200_OK)

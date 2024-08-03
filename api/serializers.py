@@ -109,3 +109,9 @@ class PaymentHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentHistory
         fields = '__all__'
+
+class SalaryHistorySerializer(serializers.ModelSerializer):
+    teacher = TeacherShortSerializer()
+    class Meta:
+        model = SalaryHistory
+        fields = '__all__'
